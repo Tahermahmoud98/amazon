@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>متجر دكاني</title>
+    
+    <!-- مكتبات التنسيق والخرائط -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --secondary: #ec4899;
+            --bg-grad: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+        }
+
+        body {
+            font-family: 'Almarai', sans-serif;
+            background: var(--bg-grad);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* تنسيق الكارت الزجاجي */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.8);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .header-box {
+            background: linear-gradient(to left, var(--primary), #8b5cf6);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            border-radius: 0 0 30px 30px;
+        }
+
+        .form-control, .form-select {
+            border-radius: 12px;
+            padding: 12px;
+            border: 2px solid #e0e7ff;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        #map {
+            height: 280px;
+            width: 100%;
+            border-radius: 15px;
+            border: 3px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        /* كلاس لإخفاء وإظهار الواجهات */
+        .d-none-custom {
+            display: none !important;
+        }
+
+        .prod-icon {
+            width: 70px; height: 70px;
+            background: #f8fafc;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center; justify-content: center;
+            font-size: 30px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        /* شاشة التحميل */
+        .loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95);
+            z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body>
+
+<div id="loader" class="loader d-none-custom">
+    <div class="spinner-border text-primary mb-2"></div>
+    <small>جاري المعالجة...</small>
+</div>
+
+<div class="container pb-5" style="max-width: 600px;">
+
+    <!-- ========================================== -->
+    <!-- 1. واجهة التاجر (تظهر تلقائياً عند فتح الموقع) -->
+    <!-- ========================================== -->
+    <div id="merchant-interface">
+        <div class="glass-card">
+            <div class="header-box">
+                <h2 class="fw-bold mb-0"><i class="fas fa-store"></i> دكاني</h2>
+                <p class="small opacity-75 mb-0">لوحة التحكم</p>
+            </div>
+            
+            <div class="p-4">
+                <!-- زر المعاينة الجديد -->
+                <button onclick="previewCustomerView()" class="btn btn-outline-dark w-100 mb-4 rounded-3 border-2 border-dashed">
+                    <i class="fas fa-eye me-2"></i> معاينة وتجربة واجهة الزبون
+                </button>
+
+                <h5 class="fw-bold text-primary border-bottom pb-2 mb-3">إضافة منتج جديد</h5>
+                
+                <form id="createForm">
+                    <div class="mb-3 text-center">
+                        <label class="form-label small fw-bold">اختر أيقونة</label>
+                        <div class="d-flex justify-content-center gap-2">
+                            <input type="radio" class="btn-check" name="icon" id="i1" value="fa-mobile-alt" checked>
+                            <label class="btn btn-outline-primary rounded-circle" style="width:45px;height:45px" for="i1"><i class="fas fa-mobile-alt"></i></label>
+                            
+                            <input type="radio" class="btn-check" name="icon" id="i2" value="fa-tshirt">
+                            <label class="btn btn-outline-primary rounded-circle" style="width:45px;height:45px" for="i2"><i class="fas fa-tshirt"></i></label>
+                            
+                            <input type="radio" class="btn-check" name="icon" id="i3" value="fa-plug">
+                            <label class="btn btn-outline-primary rounded-circle" style="width:45px;height:45px" for="i3"><i class="fas fa-plug"></i></label>
+                        </div>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="pName" placeholder="الاسم">
+                        <label>اسم المنتج</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="number" class="form-control" id="pPrice" placeholder="السعر">
+                        <label>السعر (د.ع)</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <textarea class="form-control" id="pDesc" style="height: 80px" placeholder="الوصف"></textarea>
+                        <label>تفاصيل</label>
+                    </div>
+                    
+                    <!-- حقل اختياري للصورة -->
+                    <div class="mb-3">
+                        <input type="url" class="form-control form-control-sm" id="pImg" placeholder="رابط صورة (اختياري) https://...">
+                    </div>
+
+                    <button type="button" onclick="generateLink()" class="btn btn-primary w-100 py-3 rounded-3 fw-bold shadow">
+                        إنشاء رابط للمنتج <i class="fas fa-link ms-2"></i>
+                    </button>
+                </form>
+
+                <!-- نتيجة الرابط -->
+                <div id="link-area" class="mt-4 p-3 bg-light rounded-3 d-none-custom text-center">
+                    <div class="alert alert-success py-2 small">تم إنشاء الرابط!</div>
+                    <input type="text" id="finalLink" class="form-control mb-2 text-start bg-white" readonly>
+                    <button onclick="copyLink()" class="btn btn-secondary btn-sm w-100 mb-2">نسخ الرابط</button>
+                    <a id="waShare" href="#" target="_blank" class="btn btn-success w-100 fw-bold">
+                        <i class="fab fa-whatsapp"></i> إرسال للزبون
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 2. واجهة الزبون (مخفية وتظهر عند استدعائها) -->
+    <!-- ========================================== -->
+    <div id="customer-interface" class="d-none-custom animate__animated animate__fadeInUp">
+        <div class="glass-card">
+            <div class="header-box" style="background: linear-gradient(135deg, #10b981, #059669);">
+                <button onclick="backToMerchant()" class="btn btn-sm btn-light text-success float-end rounded-circle"><i class="fas fa-arrow-right"></i></button>
+                <h2 class="fw-bold mb-0">طلب المنتج</h2>
+                <p class="small opacity-75 mb-0">أكمل البيانات للاستلام</p>
+            </div>
+
+            <div class="p-4">
+                <!-- عرض المنتج -->
+                <div class="text-center mb-4 p-3 border rounded-3 bg-white">
+                    <div id="c-icon-div" class="prod-icon"><i class="fas fa-box"></i></div>
+                    <img id="c-img-view" src="" class="img-fluid rounded mb-2 d-none-custom" style="max-height: 180px;">
+                    <h4 id="c-name" class="fw-bold mb-1">...</h4>
+                    <h5 id="c-price" class="text-danger fw-bold">0 د.ع</h5>
+                    <p id="c-desc" class="text-muted small mb-0">...</p>
+                </div>
+
+                <form id="orderForm">
+                    <div class="mb-3">
+                        <label class="fw-bold small ms-1">معلوماتك</label>
+                        <input type="text" id="cName" class="form-control mb-2" placeholder="الاسم الثلاثي" required>
+                        <input type="tel" id="cPhone" class="form-control mb-2" placeholder="رقم الهاتف" required>
+                        <textarea id="cAddress" class="form-control" rows="2" placeholder="العنوان النصي" required></textarea>
+                    </div>
+
+                    <div class="mb-3 position-relative">
+                        <label class="fw-bold small ms-1">الموقع على الخريطة</label>
+                        <div id="map"></div>
+                        <button type="button" onclick="getMyLocation()" class="btn btn-primary btn-sm position-absolute bottom-0 start-0 m-2 shadow" style="z-index: 999;">
+                            <i class="fas fa-crosshairs me-1"></i> موقعي
+                        </button>
+                    </div>
+
+                    <button type="button" onclick="submitOrder()" class="btn btn-success w-100 py-3 rounded-3 fw-bold shadow-lg">
+                        <i class="fab fa-whatsapp fa-lg me-2"></i> إتمام الطلب وإرسال
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- تصميم الفاتورة (مخفي) -->
+<div id="invoice-hidden" style="position:fixed; left:-9999px; top:0; width:500px; background:white; padding:30px; border:1px solid #ccc; font-family:'Almarai',sans-serif;">
+    <div style="border: 2px solid #333; padding: 20px; border-radius: 10px;">
+        <h2 style="text-align:center; color:#4f46e5; border-bottom:2px solid #eee; padding-bottom:10px;">فاتورة طلب - Dukan</h2>
+        <div style="margin: 20px 0;">
+            <p><strong>المنتج:</strong> <span id="inv-prod"></span></p>
+            <p><strong>السعر:</strong> <span id="inv-price" style="color:red; font-weight:bold;"></span></p>
+            <hr>
+            <p><strong>الزبون:</strong> <span id="inv-cust"></span></p>
+            <p><strong>الهاتف:</strong> <span id="inv-phone"></span></p>
+            <p><strong>العنوان:</strong> <span id="inv-addr"></span></p>
+            <p style="font-size:12px; color:#777;">الإحداثيات: <span id="inv-loc"></span></p>
+        </div>
+        <div style="text-align:center; background:#f0fdf4; padding:10px; border-radius:5px;">
+            شكراً لطلبك!
+        </div>
+    </div>
+</div>
+
+<!-- السكريبتات -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<script>
+    // الرقم الخاص بك (التاجر)
+    const MY_PHONE = "9647503727069";
+    
+    // متغيرات
+    let map, marker, userLat = 33.3152, userLng = 44.3661;
+    let productData = {};
+
+    // عند تشغيل الصفحة
+    window.onload = function() {
+        const params = new URLSearchParams(window.location.search);
+        const data = params.get('d');
+
+        if (data) {
+            // إذا كان الرابط يحتوي على بيانات -> افتح واجهة الزبون فوراً
+            initCustomerView(data);
+        } else {
+            // إذا لم يوجد بيانات -> افتح واجهة التاجر
+            document.getElementById('merchant-interface').classList.remove('d-none-custom');
+        }
+    };
+
+    // --- وظائف التاجر ---
+    function generateLink() {
+        const name = document.getElementById('pName').value;
+        const price = document.getElementById('pPrice').value;
+        const desc = document.getElementById('pDesc').value;
+        const img = document.getElementById('pImg').value;
+        const icon = document.querySelector('input[name="icon"]:checked').value;
+
+        if (!name || !price) { alert("يرجى كتابة الاسم والسعر"); return; }
+
+        const obj = { n: name, p: price, d: desc, i: icon, m: img };
+        // تشفير البيانات
+        const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
+        const link = `${window.location.origin}${window.location.pathname}?d=${encoded}`;
+
+        document.getElementById('finalLink').value = link;
+        document.getElementById('link-area').classList.remove('d-none-custom');
+        
+        const waMsg = `مرحباً، تفضل رابط طلب المنتج:\n*${name}*\nالسعر: ${price}\n\nاضغط هنا للطلب:\n${link}`;
+        document.getElementById('waShare').href = `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
+    }
+
+    function copyLink() {
+        const t = document.getElementById("finalLink");
+        t.select();
+        document.execCommand("copy");
+        alert("تم النسخ!");
+    }
+
+    // زر المعاينة: ينشئ بيانات وهمية ويفتح واجهة الزبون
+    function previewCustomerView() {
+        const dummyData = JSON.stringify({
+            n: "منتج تجريبي (مثال)",
+            p: "25000",
+            d: "هذا وصف تجريبي للمنتج لتجربة الواجهة...",
+            i: "fa-box",
+            m: ""
+        });
+        const encoded = btoa(unescape(encodeURIComponent(dummyData)));
+        initCustomerView(encoded);
+    }
+
+    // زر العودة من واجهة الزبون للتاجر (للتجربة فقط)
+    function backToMerchant() {
+        window.location.href = window.location.pathname; // إعادة تحميل الصفحة بدون بيانات
+    }
+
+    // --- وظائف الزبون ---
+    function initCustomerView(encodedData) {
+        // إخفاء التاجر وإظهار الزبون
+        document.getElementById('merchant-interface').classList.add('d-none-custom');
+        document.getElementById('customer-interface').classList.remove('d-none-custom');
+
+        try {
+            productData = JSON.parse(decodeURIComponent(escape(atob(encodedData))));
+            
+            // تعبئة البيانات
+            document.getElementById('c-name').innerText = productData.n;
+            document.getElementById('c-price').innerText = Number(productData.p).toLocaleString() + " د.ع";
+            document.getElementById('c-desc').innerText = productData.d;
+
+            if (productData.m && productData.m.length > 5) {
+                document.getElementById('c-img-view').src = productData.m;
+                document.getElementById('c-img-view').classList.remove('d-none-custom');
+                document.getElementById('c-icon-div').classList.add('d-none-custom');
+            } else {
+                document.getElementById('c-icon-div').innerHTML = `<i class="fas ${productData.i}"></i>`;
+            }
+
+            initMap();
+        } catch (e) {
+            console.error(e);
+            alert("حدث خطأ في قراءة الرابط");
+        }
+    }
+
+    function initMap() {
+        if(map) return; // منع التكرار
+        map = L.map('map').setView([userLat, userLng], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        
+        marker = L.marker([userLat, userLng], {draggable:true}).addTo(map);
+        
+        marker.on('dragend', function(e) {
+            const pos = marker.getLatLng();
+            userLat = pos.lat; userLng = pos.lng;
+        });
+        
+        map.on('click', function(e) {
+            marker.setLatLng(e.latlng);
+            userLat = e.latlng.lat; userLng = e.latlng.lng;
+        });
+    }
+
+    function getMyLocation() {
+        if(!navigator.geolocation) { alert("المتصفح لا يدعم الموقع"); return; }
+        document.getElementById('loader').classList.remove('d-none-custom');
+        
+        navigator.geolocation.getCurrentPosition(pos => {
+            userLat = pos.coords.latitude;
+            userLng = pos.coords.longitude;
+            map.setView([userLat, userLng], 16);
+            marker.setLatLng([userLat, userLng]);
+            document.getElementById('loader').classList.add('d-none-custom');
+        }, () => {
+            alert("تعذر جلب الموقع");
+            document.getElementById('loader').classList.add('d-none-custom');
+        });
+    }
+
+    // --- إرسال الطلب (PDF + واتساب) ---
+    async function submitOrder() {
+        const name = document.getElementById('cName').value;
+        const phone = document.getElementById('cPhone').value;
+        const addr = document.getElementById('cAddress').value;
+
+        if(!name || !phone || !addr) { alert("الرجاء ملء كافة الحقول"); return; }
+
+        // احتفال بسيط
+        confetti({ particleCount: 150, spread: 60 });
+        document.getElementById('loader').classList.remove('d-none-custom');
+
+        // تجهيز الفاتورة المخفية
+        document.getElementById('inv-prod').innerText = productData.n;
+        document.getElementById('inv-price').innerText = productData.p + " د.ع";
+        document.getElementById('inv-cust').innerText = name;
+        document.getElementById('inv-phone').innerText = phone;
+        document.getElementById('inv-addr').innerText = addr;
+        document.getElementById('inv-loc').innerText = `${userLat.toFixed(4)}, ${userLng.toFixed(4)}`;
+
+        setTimeout(async () => {
+            try {
+                // التقاط صورة للفاتورة
+                const canvas = await html2canvas(document.getElementById('invoice-hidden'), {scale: 2});
+                const imgData = canvas.toDataURL('image/jpeg', 0.9);
+                
+                // إنشاء PDF
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a5');
+                const w = pdf.internal.pageSize.getWidth();
+                const h = (canvas.height * w) / canvas.width;
+                pdf.addImage(imgData, 'JPEG', 0, 0, w, h);
+                pdf.save(`طلب_${name}.pdf`);
+
+                // رابط الواتساب
+                const mapLink = `https://maps.google.com/?q=${userLat},${userLng}`;
+                const txt = `*طلب جديد!* 🔥\n📦 المنتج: ${productData.n}\n💰 السعر: ${productData.p}\n\n👤 الزبون: ${name}\n📱 الهاتف: ${phone}\n🏠 العنوان: ${addr}\n📍 الموقع: ${mapLink}`;
+                
+                window.open(`https://wa.me/${MY_PHONE}?text=${encodeURIComponent(txt)}`, '_blank');
+                
+            } catch(err) {
+                console.error(err);
+                alert("حدث خطأ تقني، سيتم تحويلك للواتساب");
+                window.open(`https://wa.me/${MY_PHONE}`, '_blank');
+            } finally {
+                document.getElementById('loader').classList.add('d-none-custom');
+            }
+        }, 1000);
+    }
+</script>
+
+</body>
+</html>
