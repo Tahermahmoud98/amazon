@@ -5,288 +5,317 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dikana Online | دکانە ئۆنلاین</title>
     
-    <!-- Bootstrap 5 CSS -->
+    <!-- Bootstrap 5 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
     
-    <!-- Font: Noto Kufi Arabic -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@100..900&display=swap" rel="stylesheet">
-    
-    <!-- Icons & Map -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Map & PDF Libraries -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- QR Code Library for PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
         :root {
-            --primary-color: #6366f1;
-            --bg-body: #f3f4f6;
+            --primary: #4f46e5;
+            --bg: #f8fafc;
         }
 
         body {
             font-family: 'Noto Kufi Arabic', sans-serif;
-            background-color: var(--bg-body);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            padding-bottom: 50px;
+            background-color: var(--bg);
+            padding-bottom: 80px;
         }
 
-        /* حاوية الهاتف */
-        .mobile-frame {
-            width: 100%;
-            max-width: 480px;
+        .mobile-container {
+            max-width: 500px;
+            margin: 0 auto;
             background: white;
             min-height: 100vh;
-            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            box-shadow: 0 0 30px rgba(0,0,0,0.05);
             position: relative;
         }
 
-        /* الهيدر */
-        .app-header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 15px 20px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* كارت رفع الصور */
-        .upload-area {
-            border: 2px dashed #dee2e6;
-            border-radius: 20px;
-            padding: 40px 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.3s;
-            background: #f8f9fa;
+        /* Hero Image Area */
+        .product-header {
             position: relative;
+            height: 380px;
             overflow: hidden;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
-        .upload-area:hover { border-color: var(--primary-color); background: #eef2ff; }
-        .upload-area img {
-            width: 100%; height: 100%; object-fit: cover;
-            position: absolute; top: 0; left: 0; display: none; border-radius: 18px;
-        }
-
-        /* صورة المنتج للزبون */
-        .product-hero {
-            height: 350px;
+        .product-header img {
             width: 100%;
-            position: relative;
+            height: 100%;
+            object-fit: cover;
         }
-        .product-hero img {
-            width: 100%; height: 100%; object-fit: cover;
-            border-bottom-left-radius: 30px;
-            border-bottom-right-radius: 30px;
+        .overlay-gradient {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 150px;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            pointer-events: none;
         }
-        .price-badge {
-            position: absolute; bottom: 20px; right: 20px;
-            background: rgba(255,255,255,0.9);
-            padding: 8px 20px; border-radius: 50px;
-            font-weight: 800; color: var(--primary-color);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        /* الخريطة */
-        #map { height: 200px; border-radius: 15px; width: 100%; z-index: 1; }
-
-        /* أزرار الكمية */
-        .qty-btn {
-            width: 35px; height: 35px;
-            border-radius: 50%; border: none;
-            background: #f1f5f9; color: var(--primary-color);
-            font-weight: bold; display: flex; align-items: center; justify-content: center;
+        .price-tag {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 800;
+            color: var(--primary);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            font-size: 1.2rem;
+            z-index: 2;
         }
 
-        /* شريط التحميل */
-        .progress { height: 5px; position: absolute; bottom: 0; left: 0; width: 100%; }
+        /* Custom Cards */
+        .info-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+            border: 1px solid #f1f5f9;
+            margin-bottom: 15px;
+        }
 
-        .btn-primary-custom {
-            background: var(--primary-color); border: none;
-            padding: 15px; border-radius: 15px; font-weight: 700; width: 100%; color: white;
-            box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
+        .btn-main {
+            padding: 15px;
+            border-radius: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            transition: 0.2s;
         }
-        .btn-whatsapp {
-            background: #25D366; border: none; color: white;
-            padding: 15px; border-radius: 15px; font-weight: 700; width: 100%;
-            box-shadow: 0 10px 20px -5px rgba(37, 211, 102, 0.4);
+        .btn-whatsapp { background-color: #25D366; color: white; border: none; }
+        .btn-pdf { background-color: #ef4444; color: white; border: none; }
+        .btn-main:active { transform: scale(0.98); }
+
+        /* Map */
+        #map { height: 250px; border-radius: 16px; width: 100%; border: 2px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+
+        /* Hidden Invoice for PDF Generation */
+        #invoice-template {
+            display: none; /* Hidden on screen */
+            background: white;
+            padding: 30px;
+            width: 100%;
+            font-family: 'Noto Kufi Arabic', sans-serif;
+            border: 1px solid #ddd;
         }
+        .invoice-header { border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
+        .invoice-table th { background-color: #f8f9fa; }
     </style>
 </head>
 <body>
 
-<div class="mobile-frame">
+<div class="mobile-container">
     
-    <!-- ================= قسم التاجر ================= -->
+    <!-- ================== وضع التاجر ================== -->
     <div id="merchantView" class="d-none">
-        <div class="app-header">
-            <div class="h5 m-0 fw-bold text-primary"><i class="fas fa-store"></i> دکانە ئۆنلاین</div>
-        </div>
-
-        <div class="container py-4">
-            <h4 class="fw-bold mb-3">دروستکرنا لینکی 🔗</h4>
-            <p class="text-muted small mb-4">وێنەیەکێ بارکە و پێزانینا بنڤیسە.</p>
-
-            <div class="upload-area mb-4" onclick="document.getElementById('fileInput').click()">
-                <div class="progress d-none" id="uploadProgressBox">
+        <div class="p-4">
+            <h4 class="fw-bold text-primary mb-1">دکانە ئۆنلاین <i class="fas fa-store"></i></h4>
+            <p class="text-muted small">دروستکرنا لینکەکێ نوی</p>
+            
+            <div class="info-card text-center" onclick="document.getElementById('fileInput').click()" style="cursor: pointer; border: 2px dashed #cbd5e1;">
+                <div id="uploadPlaceholder">
+                    <i class="fas fa-image fa-3x text-muted mb-2"></i>
+                    <h6 class="fw-bold">وێنەیەکێ بارکە</h6>
+                </div>
+                <img id="previewImg" class="img-fluid rounded" style="display:none; max-height: 200px;">
+                <input type="file" id="fileInput" accept="image/*" class="d-none" onchange="handleImageUpload()">
+                <div class="progress mt-3 d-none" style="height: 5px;">
                     <div class="progress-bar bg-success" id="uploadBar" style="width: 0%"></div>
                 </div>
-                <div id="uploadPlaceholder">
-                    <i class="fas fa-cloud-upload-alt fa-3x text-secondary mb-3"></i>
-                    <h6 class="fw-bold">لێرە کلیک بکە بۆ بارکرنا وێنەی</h6>
-                    <small class="text-muted">کامیرە یان ستۆدیۆ</small>
-                </div>
-                <img id="previewImg">
-                <input type="file" id="fileInput" accept="image/*" class="d-none" onchange="handleImageUpload()">
             </div>
 
             <div class="mb-3">
-                <label class="form-label fw-bold small">ناڤێ بەرهەمی</label>
-                <input type="text" id="pName" class="form-control form-control-lg bg-light border-0" placeholder="...">
+                <label class="fw-bold small mb-1">ناڤێ بەرهەمی</label>
+                <input type="text" id="pName" class="form-control form-control-lg bg-light border-0">
             </div>
-
             <div class="mb-3">
-                <label class="form-label fw-bold small">بها (دینار)</label>
-                <input type="number" id="pPrice" class="form-control form-control-lg bg-light border-0" placeholder="25000">
+                <label class="fw-bold small mb-1">بها (دینار)</label>
+                <input type="number" id="pPrice" class="form-control form-control-lg bg-light border-0">
             </div>
-
             <div class="mb-4">
-                <label class="form-label fw-bold small">پێزانین (ئەگەر هەبن)</label>
+                <label class="fw-bold small mb-1">پێزانین</label>
                 <textarea id="pDesc" class="form-control bg-light border-0" rows="3"></textarea>
             </div>
 
-            <button onclick="generateLink()" class="btn-primary-custom">
-                دروستکرنا لینکی <i class="fas fa-arrow-left ms-2"></i>
+            <button onclick="generateLink()" class="btn-main" style="background: var(--primary); color: white;">
+                دروستکرن و کۆپیکرن <i class="fas fa-link"></i>
             </button>
         </div>
     </div>
 
-    <!-- ================= قسم الزبون ================= -->
+    <!-- ================== وضع الزبون ================== -->
     <div id="customerView" class="d-none">
-        <div class="product-hero">
+        <!-- صورة المنتج -->
+        <div class="product-header">
             <img id="cImg" src="">
-            <div class="price-badge h5 mb-0" id="cPriceBadge">0 د.ع</div>
+            <div class="overlay-gradient"></div>
+            <div class="price-tag" id="cPriceBadge">0 د.ع</div>
         </div>
 
-        <div class="container" style="position: relative; top: -30px;">
-            <!-- كارت التفاصيل -->
-            <div class="card border-0 shadow-sm rounded-4 p-3 mb-3">
+        <div class="container" style="position: relative; top: -20px; z-index: 10;">
+            
+            <!-- تفاصيل المنتج والكمية -->
+            <div class="info-card">
                 <div class="d-flex justify-content-between align-items-start">
-                    <h4 id="cName" class="fw-bold mb-0">...</h4>
-                    
-                    <!-- التحكم بالكمية -->
-                    <div class="d-flex align-items-center bg-light rounded-pill p-1">
-                        <button class="qty-btn" onclick="updateQty(-1)"><i class="fas fa-minus small"></i></button>
-                        <span id="qtyDisplay" class="mx-3 fw-bold">1</span>
-                        <button class="qty-btn" onclick="updateQty(1)"><i class="fas fa-plus small"></i></button>
+                    <div>
+                        <h4 id="cName" class="fw-bold mb-1">...</h4>
+                        <p id="cDesc" class="text-muted small mb-0">...</p>
+                    </div>
+                    <div class="d-flex align-items-center bg-light rounded-pill px-2 py-1">
+                        <button class="btn btn-sm" onclick="updateQty(-1)"><i class="fas fa-minus"></i></button>
+                        <span id="qtyDisplay" class="fw-bold mx-2">1</span>
+                        <button class="btn btn-sm" onclick="updateQty(1)"><i class="fas fa-plus"></i></button>
                     </div>
                 </div>
-                <p id="cDesc" class="text-muted mt-2 small">...</p>
             </div>
 
             <!-- اختيار المدينة والتوصيل -->
-            <div class="card border-0 shadow-sm rounded-4 p-3 mb-3 bg-white">
-                <label class="fw-bold mb-2 small"><i class="fas fa-map-marker-alt text-primary"></i> باژێرێ خۆ هەلبژێرە (گەهاندن)</label>
-                <select id="citySelect" class="form-select form-select-lg bg-light border-0 fw-bold text-dark" onchange="updateTotal()">
-                    <option value="3000" selected>زاخۆ / دهۆک (3,000 د.ع)</option>
+            <div class="info-card">
+                <h6 class="fw-bold mb-3"><i class="fas fa-truck text-primary ms-2"></i>جهێ گەهاندنێ هەلبژێرە:</h6>
+                <select id="citySelect" class="form-select form-select-lg bg-light border-0 fw-bold" onchange="updateTotal()">
+                    <option value="3000">زاخۆ / دهۆک (3,000 د.ع)</option>
                     <option value="5000">هەولێر / سلێمانی (5,000 د.ع)</option>
-                    <option value="10000">باژێرێن دی یێن عێراقێ (10,000 د.ع)</option>
+                    <option value="10000">دەرڤەی هەرێمێ (10,000 د.ع)</option>
                 </select>
-            </div>
-
-            <!-- الملخص المالي -->
-            <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-primary text-white">
-                <div class="d-flex justify-content-between mb-2 small">
-                    <span>بەرهەم x <span id="sQty">1</span></span>
-                    <span id="sPrice">0</span>
-                </div>
-                <div class="d-flex justify-content-between mb-2 small">
-                    <span>گەهاندن</span>
-                    <span id="sDelivery">3,000</span>
-                </div>
-                <hr class="my-2" style="opacity: 0.3;">
-                <div class="d-flex justify-content-between fw-bold h5 mb-0">
-                    <span>سەرجەم (کۆی گشتی)</span>
+                
+                <hr class="my-3">
+                
+                <div class="d-flex justify-content-between fw-bold h5 mb-0 text-primary">
+                    <span>کۆی گشتی (سەرجەم):</span>
                     <span id="sTotal">0</span>
                 </div>
             </div>
 
-            <h5 class="fw-bold mb-3">زانیاریێن وەرگرتنێ</h5>
-            
-            <div class="mb-3">
-                <input type="text" id="custName" class="form-control form-control-lg bg-light border-0" placeholder="ناڤێ سیانی">
-            </div>
-            <div class="mb-3">
-                <input type="tel" id="custPhone" class="form-control form-control-lg bg-light border-0" placeholder="ژمارا تەلەفۆنێ (0750...)">
-            </div>
-
-            <div class="card border-0 p-2 mb-3 bg-light rounded-4">
-                <div class="d-flex justify-content-between align-items-center mb-2 px-2">
-                    <span class="small fw-bold text-muted">ل سەر نەخشەی دیار بکە</span>
-                    <button onclick="getMyLocation()" class="btn btn-sm btn-outline-primary rounded-pill">
-                        <i class="fas fa-crosshairs"></i> جهێ من
+            <!-- معلومات الزبون والخريطة -->
+            <div class="info-card">
+                <h6 class="fw-bold mb-3"><i class="fas fa-user-edit text-primary ms-2"></i>زانیاریێن وەرگرتنێ</h6>
+                <input type="text" id="custName" class="form-control mb-2 bg-light border-0" placeholder="ناڤێ سیانی">
+                <input type="tel" id="custPhone" class="form-control mb-3 bg-light border-0" placeholder="ژمارا مۆبایلێ (0750...)">
+                
+                <div class="position-relative mb-2">
+                    <div id="map"></div>
+                    <button onclick="getMyLocation()" class="btn btn-light position-absolute bottom-0 start-0 m-2 shadow-sm fw-bold" style="z-index: 500; font-size: 0.8rem;">
+                        <i class="fas fa-crosshairs text-danger"></i> جهێ من
                     </button>
                 </div>
-                <div id="map"></div>
+                <small class="text-muted d-block text-center mb-2" id="geoStatus">هیڤیە جهێ خۆ ل سەر نەخشەی دیار بکە</small>
+                
+                <textarea id="custAddress" class="form-control bg-light border-0" rows="2" placeholder="نیشانەکا دیار (مزگەفت، قوتابخانە...)"></textarea>
             </div>
 
-            <input type="text" id="custAddress" class="form-control bg-light border-0 mb-4" placeholder="نێزیکترین نیشان (مزگەفت، قوتابخانە...)">
-
-            <button onclick="sendOrder()" class="btn-whatsapp mb-3">
-                <i class="fab fa-whatsapp fa-lg"></i> فرێکرنا داخوازیێ
-            </button>
-        </div>
-    </div>
-
-</div>
-
-<!-- إشعار منبثق -->
-<div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 2000">
-    <div id="liveToast" class="toast align-items-center text-white bg-dark border-0 rounded-pill px-3" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-            <div class="toast-body d-flex align-items-center gap-2">
-                <i class="fas fa-info-circle"></i> <span id="toastMsg">...</span>
+            <!-- الأزرار -->
+            <div class="d-flex gap-2 pb-4">
+                <button onclick="sendOrder()" class="btn-main btn-whatsapp">
+                    فرێکرن (WhatsApp) <i class="fab fa-whatsapp fa-lg"></i>
+                </button>
+                <button onclick="downloadPDF()" class="btn-main btn-pdf" style="width: 40%;">
+                    PDF <i class="fas fa-file-pdf"></i>
+                </button>
             </div>
         </div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- ================== قالب الفاتورة (مخفي) ================== -->
+<div id="invoice-template">
+    <div class="invoice-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold text-primary">دکانە ئۆنلاین</h2>
+            <p class="text-muted mb-0">پسوولەیا کڕینێ (Invoice)</p>
+        </div>
+        <div class="text-end">
+            <h5 class="fw-bold" id="inv-date">2025/11/25</h5>
+            <small class="text-muted">Order ID: #<span id="inv-id">12345</span></small>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-6">
+            <h6 class="fw-bold text-decoration-underline">زانیاریێن کریاری:</h6>
+            <p class="mb-1" id="inv-custName">-</p>
+            <p class="mb-1" id="inv-custPhone">-</p>
+            <p class="mb-0 small text-muted" id="inv-address">-</p>
+        </div>
+        <div class="col-6 text-end">
+            <div id="qrcode" style="display: flex; justify-content: flex-end;"></div>
+            <small class="d-block mt-1">سکان بکە بۆ لوکەیشن</small>
+        </div>
+    </div>
+
+    <table class="table table-bordered text-center align-middle invoice-table">
+        <thead>
+            <tr>
+                <th>بەرهەم</th>
+                <th>بها</th>
+                <th>هژمار</th>
+                <th>سەرجەم</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td id="inv-pName" class="fw-bold">-</td>
+                <td id="inv-pPrice">-</td>
+                <td id="inv-qty">-</td>
+                <td id="inv-subtotal">-</td>
+            </tr>
+            <tr>
+                <td colspan="3" class="text-end fw-bold">گەهاندن (Delivery)</td>
+                <td id="inv-delivery">-</td>
+            </tr>
+            <tr class="table-primary">
+                <td colspan="3" class="text-end fw-bold h5">کۆی گشتی</td>
+                <td class="fw-bold h5" id="inv-total">-</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="mt-4 text-center text-muted small border-top pt-3">
+        <p class="mb-1">سوپاس بۆ کڕینا وە ژ دکانا مە</p>
+        <p>هەر پرسیارەک هەبیت پەیوەندیێ ب 07503727069 بکە</p>
+    </div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    // ================= ثوابت النظام =================
-    const MERCHANT_PHONE = "9647503727069"; // الرقم الثابت للتاجر
-    const API_KEY = "6d207e02198a847aa98d0a2a901485a5"; // مفتاح رفع الصور
+    // Constants
+    const MERCHANT_PHONE = "9647503727069";
+    const API_KEY = "6d207e02198a847aa98d0a2a901485a5";
 
+    // Variables
     let productData = { img: '', name: '', price: 0, desc: '' };
     let orderData = { qty: 1, lat: null, lng: null };
     let map, marker;
 
-    // عند تحميل الصفحة
+    // Init
     window.onload = function() {
         const params = new URLSearchParams(window.location.search);
         if (params.has('p')) {
-            // وضع الزبون
             document.getElementById('customerView').classList.remove('d-none');
             loadCustomer(params);
         } else {
-            // وضع التاجر
             document.getElementById('merchantView').classList.remove('d-none');
         }
     };
 
-    // ---------------- وظائف التاجر ----------------
+    // ================= Merchant Logic =================
     async function handleImageUpload() {
         const file = document.getElementById('fileInput').files[0];
         if (!file) return;
 
-        // معاينة
+        // Preview
         const reader = new FileReader();
         reader.onload = e => {
             document.getElementById('previewImg').src = e.target.result;
@@ -295,50 +324,32 @@
         };
         reader.readAsDataURL(file);
 
-        // رفع
+        // Upload
         const formData = new FormData();
         formData.append("image", file);
+        document.querySelector('.progress').classList.remove('d-none');
         
-        document.getElementById('uploadProgressBox').classList.remove('d-none');
-        const progressBar = document.getElementById('uploadBar');
-        progressBar.style.width = "40%";
-
         try {
             const res = await fetch(`https://api.imgbb.com/1/upload?key=${API_KEY}`, { method: "POST", body: formData });
             const data = await res.json();
-            progressBar.style.width = "100%";
-            
-            if (data.success) {
-                productData.img = data.data.url;
-                showToast("وێنە ب سەرکەفتیانە هاتە بارکرن ✅");
-            }
-        } catch (e) {
-            showToast("کێشەیەک ل بارکرنا وێنەی دا هەیە ❌");
-        }
+            document.getElementById('uploadBar').style.width = "100%";
+            if (data.success) productData.img = data.data.url;
+        } catch (e) { alert("کێشە ل بارکرنا وێنەی!"); }
     }
 
     function generateLink() {
         const name = document.getElementById('pName').value.trim();
         const price = document.getElementById('pPrice').value;
         const desc = document.getElementById('pDesc').value;
+        const img = productData.img || "https://placehold.co/600x400/png?text=No+Image";
 
-        if (!name || !price) {
-            showToast("هیڤیە ناڤ و بهایێ بەرهەمی بنڤیسە!");
-            return;
-        }
+        if(!name || !price) return alert("هیڤیە ناڤ و بهای بنڤیسە");
 
-        const imgUrl = productData.img || "https://placehold.co/600x400/png?text=No+Image";
-        
-        // لا نحتاج لتمرير سعر التوصيل هنا، لأنه يحدد من قبل الزبون
-        const baseUrl = window.location.href.split('?')[0];
-        const link = `${baseUrl}?p=${encodeURIComponent(name)}&pr=${price}&d=${encodeURIComponent(desc)}&i=${encodeURIComponent(imgUrl)}`;
-
-        navigator.clipboard.writeText(link).then(() => {
-            showToast("لینک هاتە کۆپیکرن! بۆ کریاری فرێکە 🚀");
-        });
+        const url = `${window.location.href.split('?')[0]}?p=${encodeURIComponent(name)}&pr=${price}&d=${encodeURIComponent(desc)}&i=${encodeURIComponent(img)}`;
+        navigator.clipboard.writeText(url).then(() => alert("لینک هاتە کۆپیکرن ✅"));
     }
 
-    // ---------------- وظائف الزبون ----------------
+    // ================= Customer Logic =================
     function loadCustomer(params) {
         productData.name = params.get('p');
         productData.price = parseFloat(params.get('pr'));
@@ -347,111 +358,147 @@
 
         document.getElementById('cName').innerText = productData.name;
         document.getElementById('cPriceBadge').innerText = productData.price.toLocaleString() + ' د.ع';
-        document.getElementById('cDesc').innerText = productData.desc || "";
+        document.getElementById('cDesc').innerText = productData.desc;
         document.getElementById('cImg').src = productData.img;
         
         updateTotal();
-        initMap();
+        setTimeout(initMap, 500); // Delay for layout render
     }
 
-    function updateQty(change) {
-        let newQty = orderData.qty + change;
-        if (newQty < 1) return;
-        orderData.qty = newQty;
-        document.getElementById('qtyDisplay').innerText = newQty;
-        document.getElementById('sQty').innerText = newQty;
-        updateTotal();
+    function updateQty(n) {
+        if (orderData.qty + n > 0) {
+            orderData.qty += n;
+            document.getElementById('qtyDisplay').innerText = orderData.qty;
+            updateTotal();
+        }
     }
 
     function updateTotal() {
-        // قراءة سعر التوصيل من القائمة المنسدلة
-        const deliveryPrice = parseInt(document.getElementById('citySelect').value);
-        
-        const subtotal = productData.price * orderData.qty;
-        const total = subtotal + deliveryPrice;
-
-        document.getElementById('sPrice').innerText = subtotal.toLocaleString() + ' د.ع';
-        document.getElementById('sDelivery').innerText = deliveryPrice.toLocaleString() + ' د.ع';
+        const delivery = parseInt(document.getElementById('citySelect').value);
+        const total = (productData.price * orderData.qty) + delivery;
         document.getElementById('sTotal').innerText = total.toLocaleString() + ' د.ع';
     }
 
-    // ---------------- الخرائط والموقع ----------------
+    // ================= Map & Location =================
     function initMap() {
-        // دهوك كافتراضي
-        const defaultLat = 36.8679, defaultLng = 42.9489;
-        map = L.map('map').setView([defaultLat, defaultLng], 13);
+        // Default: Duhok
+        const lat = 36.8679, lng = 42.9489;
+        map = L.map('map').setView([lat, lng], 13);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
-        marker = L.marker([defaultLat, defaultLng], {draggable: true}).addTo(map);
+        marker = L.marker([lat, lng], {draggable: true}).addTo(map);
+
+        function updateMarker(lat, lng) {
+            marker.setLatLng([lat, lng]);
+            orderData.lat = lat;
+            orderData.lng = lng;
+            document.getElementById('geoStatus').innerText = `✅ هاتە دیارکرن: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+            document.getElementById('geoStatus').classList.add('text-success');
+        }
+
+        marker.on('dragend', e => { const p = e.target.getLatLng(); updateMarker(p.lat, p.lng); });
+        map.on('click', e => updateMarker(e.latlng.lat, e.latlng.lng));
         
-        marker.on('dragend', function(e) {
-            const pos = marker.getLatLng();
-            orderData.lat = pos.lat;
-            orderData.lng = pos.lng;
-        });
-        map.on('click', function(e) {
-            marker.setLatLng(e.latlng);
-            orderData.lat = e.latlng.lat;
-            orderData.lng = e.latlng.lng;
-        });
+        // Expose function for button
+        window.updateMapLocation = (lat, lng) => {
+            map.setView([lat, lng], 16);
+            updateMarker(lat, lng);
+        };
     }
 
     function getMyLocation() {
-        if (!navigator.geolocation) return showToast("GPS کار ناکەت");
-        showToast("لێگەریان ل جهێ تە...");
-        navigator.geolocation.getCurrentPosition(pos => {
-            const {latitude, longitude} = pos.coords;
-            map.setView([latitude, longitude], 16);
-            marker.setLatLng([latitude, longitude]);
-            orderData.lat = latitude;
-            orderData.lng = longitude;
-        }, () => showToast("نەشیام جهێ تە دیار بکەم"));
+        if (!navigator.geolocation) return alert("GPS کار ناکەت");
+        document.getElementById('geoStatus').innerText = "جاری لێگەریان...";
+        navigator.geolocation.getCurrentPosition(
+            pos => window.updateMapLocation(pos.coords.latitude, pos.coords.longitude),
+            err => alert("نەشیام جهێ تە بینم، هیڤیە ل سەر نەخشەی دیار بکە"),
+            { enableHighAccuracy: true } // دقة عالية
+        );
     }
 
-    // ---------------- إرسال الطلب ----------------
-    function sendOrder() {
+    // ================= Export & Send =================
+    function validateForm() {
         const name = document.getElementById('custName').value;
         const phone = document.getElementById('custPhone').value;
-        const address = document.getElementById('custAddress').value;
-        
-        // الحصول على اسم المدينة المختارة
-        const select = document.getElementById('citySelect');
-        const cityName = select.options[select.selectedIndex].text.split('(')[0].trim();
-        const deliveryCost = parseInt(select.value);
-
-        if (!name || !phone) {
-            showToast("هیڤیە ناڤ و ژمارا تەلەفۆنێ بنڤیسە");
-            return;
-        }
-
-        const mapLink = orderData.lat ? `https://www.google.com/maps?q=${orderData.lat},${orderData.lng}` : "نەهاتیە دیارکرن";
-        const total = (productData.price * orderData.qty) + deliveryCost;
-
-        const msg = `🛍️ *داخوازیا نوی (Order)*
-━━━━━━━━━━━━━━
-📦 *بەرهەم:* ${productData.name}
-💰 *بها:* ${productData.price.toLocaleString()}
-🔢 *هژمار:* ${orderData.qty}
-🏙️ *باژێر:* ${cityName}
-🚚 *گەهاندن:* ${deliveryCost.toLocaleString()}
-💵 *سەرجەم:* ${total.toLocaleString()} د.ع
-━━━━━━━━━━━━━━
-👤 *پێزانینێن کریاری:*
-ناڤ: ${name}
-تەلەفۆن: ${phone}
-نیشان: ${address}
-📍 *ل سەر نەخشەی:* ${mapLink}
-━━━━━━━━━━━━━━
-🔗 *وێنە:* ${productData.img}`;
-
-        const url = `https://wa.me/${MERCHANT_PHONE}?text=${encodeURIComponent(msg)}`;
-        window.open(url, '_blank');
+        if(!name || !phone) { alert("ناڤ و ژمارا تەلەفۆنێ پێدڤینە!"); return false; }
+        return { name, phone, address: document.getElementById('custAddress').value };
     }
 
-    function showToast(message) {
-        document.getElementById('toastMsg').innerText = message;
-        const toastEl = document.getElementById('liveToast');
-        const toast = new bootstrap.Toast(toastEl);
-        toast.show();
+    function prepareData() {
+        const formData = validateForm();
+        if(!formData) return null;
+        
+        const select = document.getElementById('citySelect');
+        const delivery = parseInt(select.value);
+        const subtotal = productData.price * orderData.qty;
+        const total = subtotal + delivery;
+        const mapLink = orderData.lat ? `https://maps.google.com/?q=${orderData.lat},${orderData.lng}` : "";
+
+        return { ...formData, delivery, subtotal, total, mapLink, cityName: select.options[select.selectedIndex].text };
+    }
+
+    function sendOrder() {
+        const data = prepareData();
+        if(!data) return;
+
+        const msg = `🧾 *داخوازی (Order)*
+📦 *${productData.name}*
+💰 بها: ${productData.price.toLocaleString()}
+🔢 هژمار: ${orderData.qty}
+🚛 گەهاندن: ${data.delivery.toLocaleString()}
+💵 *سەرجەم: ${data.total.toLocaleString()} د.ع*
+------------------
+👤 ${data.name}
+📱 ${data.phone}
+📍 ${data.cityName}
+🏠 ${data.address}
+🌐 ${data.mapLink}`;
+
+        window.open(`https://wa.me/${MERCHANT_PHONE}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    function downloadPDF() {
+        const data = prepareData();
+        if(!data) return;
+
+        // Fill Template
+        document.getElementById('inv-date').innerText = new Date().toLocaleDateString('en-GB');
+        document.getElementById('inv-id').innerText = Math.floor(Math.random()*90000) + 10000;
+        document.getElementById('inv-custName').innerText = data.name;
+        document.getElementById('inv-custPhone').innerText = data.phone;
+        document.getElementById('inv-address').innerText = data.cityName + " - " + data.address;
+        
+        document.getElementById('inv-pName').innerText = productData.name;
+        document.getElementById('inv-pPrice').innerText = productData.price.toLocaleString();
+        document.getElementById('inv-qty').innerText = orderData.qty;
+        document.getElementById('inv-subtotal').innerText = data.subtotal.toLocaleString();
+        document.getElementById('inv-delivery').innerText = data.delivery.toLocaleString();
+        document.getElementById('inv-total').innerText = data.total.toLocaleString() + " د.ع";
+
+        // Generate QR Code
+        document.getElementById('qrcode').innerHTML = "";
+        if(data.mapLink) {
+            new QRCode(document.getElementById("qrcode"), {
+                text: data.mapLink,
+                width: 60,
+                height: 60
+            });
+        }
+
+        // Convert to PDF
+        const element = document.getElementById('invoice-template');
+        element.style.display = 'block'; // Show temporarily
+        
+        const opt = {
+            margin: 0.5,
+            filename: `Invoice_${data.name}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(element).save().then(() => {
+            element.style.display = 'none'; // Hide again
+        });
     }
 </script>
 
