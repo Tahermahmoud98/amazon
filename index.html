@@ -2,569 +2,520 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>متجر دكاني بريميوم</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام الطلبات الذكي</title>
     
-    <!-- Bootstrap 5 & Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <!-- Google Fonts (Almarai) -->
-    <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap" rel="stylesheet">
-    <!-- Maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- Animations -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts: Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Libraries for PDF & QR -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
     <style>
         :root {
-            --primary: #6366f1;
-            --secondary: #ec4899;
-            --accent: #8b5cf6;
-            --bg-grad: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+            --primary-color: #0d6efd;
+            --secondary-color: #198754;
+            --bg-color: #f8f9fa;
+            --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         body {
-            font-family: 'Almarai', sans-serif;
-            background: var(--bg-grad);
-            min-height: 100vh;
-            color: #334155;
-            overflow-x: hidden;
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-color);
+            direction: rtl;
+            text-align: right;
+            padding-bottom: 50px;
         }
 
-        /* الخلفية المتحركة */
-        .bg-shapes {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-            overflow: hidden;
-        }
-        .shape {
-            position: absolute;
-            filter: blur(50px);
-            opacity: 0.6;
-            animation: float 10s infinite ease-in-out;
-        }
-        .shape-1 { background: var(--primary); width: 300px; height: 300px; top: -50px; left: -50px; border-radius: 50%; }
-        .shape-2 { background: var(--secondary); width: 250px; height: 250px; bottom: -50px; right: -50px; border-radius: 50%; animation-delay: 2s; }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
-        }
-
-        /* التصميم الزجاجي */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.9);
-            border-radius: 24px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .header-section {
-            text-align: center;
-            padding: 30px 20px;
-            background: linear-gradient(to left, var(--primary), var(--accent));
-            color: white;
-            border-radius: 0 0 50% 50% / 20px;
-            margin-bottom: 25px;
-        }
-
-        .form-control, .form-select {
-            border-radius: 12px;
-            padding: 14px;
-            border: 2px solid #e2e8f0;
-            background: rgba(255,255,255,0.9);
-            transition: all 0.3s;
-        }
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-        }
-
-        .btn-modern {
-            background: linear-gradient(45deg, var(--primary), var(--accent));
+        /* تنسيق الكروت */
+        .custom-card {
             border: none;
+            border-radius: 15px;
+            box-shadow: var(--card-shadow);
+            background: #fff;
+            overflow: hidden;
+            transition: transform 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .card-header-custom {
+            background-color: var(--primary-color);
             color: white;
             padding: 15px;
-            border-radius: 14px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .btn-modern:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
-            color: white;
-        }
-        .btn-modern:active { transform: scale(0.98); }
-
-        #map {
-            height: 300px;
-            width: 100%;
-            border-radius: 16px;
-            border: 3px solid white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            z-index: 1;
-        }
-
-        .product-preview {
+            font-weight: bold;
             text-align: center;
-            padding: 20px;
+            font-size: 1.2rem;
+        }
+
+        /* معاينة الصورة */
+        .image-display-area {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            background-color: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #aaa;
+            border-bottom: 1px solid #ddd;
+            overflow: hidden;
+        }
+
+        .image-display-area img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* الأزرار والحقول */
+        .form-control {
+            border-radius: 10px;
+            padding: 10px;
+            border: 1px solid #ced4da;
+        }
+
+        .btn-custom {
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: bold;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        /* النصوص */
+        .product-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #333;
+            margin-top: 15px;
+        }
+
+        .product-price {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        /* إخفاء الأقسام */
+        .d-none-custom {
+            display: none !important;
+        }
+
+        /* منطقة الفاتورة المخفية للطباعة */
+        #invoiceArea {
             background: white;
-            border-radius: 16px;
-            margin-bottom: 20px;
-            border: 1px dashed var(--primary);
-        }
-
-        .prod-icon {
-            width: 80px; height: 80px;
-            background: #f1f5f9;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center; justify-content: center;
-            font-size: 35px;
-            color: var(--primary);
-            margin-bottom: 10px;
-        }
-
-        .hidden { display: none !important; }
-        
-        /* Loading Overlay */
-        .loader-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.95);
-            z-index: 9999;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-        }
-
-        /* Invoice hidden style */
-        #invoice-box {
-            position: fixed; top: 0; left: -9999px; width: 550px;
-            background: white; padding: 40px;
-            border: 1px solid #eee;
-            font-family: 'Almarai', sans-serif;
+            padding: 20px;
+            width: 600px; 
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+            z-index: -1;
         }
     </style>
 </head>
 <body>
 
-<!-- الخلفية -->
-<div class="bg-shapes">
-    <div class="shape shape-1"></div>
-    <div class="shape shape-2"></div>
-</div>
-
-<!-- شاشة التحميل -->
-<div id="loader" class="loader-overlay hidden">
-    <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status"></div>
-    <h5 class="mt-3 fw-bold text-muted">جاري المعالجة...</h5>
-</div>
-
-<div class="container py-3" style="max-width: 600px;">
-
-    <!-- ================== واجهة التاجر ================== -->
-    <div id="merchant-ui" class="animate__animated animate__fadeIn">
-        <div class="glass-card">
-            <div class="header-section">
-                <h2 class="fw-bold mb-1"><i class="fas fa-store me-2"></i>دكاني</h2>
-                <small>لوحة التحكم بالمنتجات</small>
-                <button class="btn btn-sm btn-light text-primary position-absolute top-0 end-0 m-3 rounded-circle" onclick="toggleSettings()">
-                    <i class="fas fa-cog"></i>
-                </button>
-            </div>
-
-            <!-- إعدادات مخفية -->
-            <div id="settings-panel" class="p-3 bg-light border-bottom hidden">
-                <label class="small fw-bold">رقم هاتفك (لاستلام الطلبات)</label>
-                <div class="input-group">
-                    <input type="text" id="merchantPhone" class="form-control form-control-sm" value="9647503727069">
-                    <button class="btn btn-primary btn-sm" onclick="saveSettings()">حفظ</button>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            
+            <!-- ============================ -->
+            <!-- SECTION 1: SELLER PANEL (واجهة البائع) -->
+            <!-- ============================ -->
+            <div id="sellerSection" class="custom-card d-none-custom">
+                <div class="card-header-custom">
+                    <i class="fas fa-store me-2"></i> لوحة البائع - إضافة منتج
                 </div>
-            </div>
-
-            <div class="p-4">
-                <h5 class="fw-bold mb-3 text-secondary">إنشاء رابط منتج جديد</h5>
                 
-                <form id="createForm">
-                    <!-- نوع المنتج (أيقونة) -->
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small">تصنيف المنتج</label>
-                        <div class="row g-2 text-center" id="icon-selector">
-                            <div class="col-3">
-                                <input type="radio" class="btn-check" name="cat" id="cat1" value="fa-mobile-alt" checked>
-                                <label class="btn btn-outline-primary w-100 rounded-3" for="cat1"><i class="fas fa-mobile-alt"></i></label>
-                            </div>
-                            <div class="col-3">
-                                <input type="radio" class="btn-check" name="cat" id="cat2" value="fa-tshirt">
-                                <label class="btn btn-outline-primary w-100 rounded-3" for="cat2"><i class="fas fa-tshirt"></i></label>
-                            </div>
-                            <div class="col-3">
-                                <input type="radio" class="btn-check" name="cat" id="cat3" value="fa-shoe-prints">
-                                <label class="btn btn-outline-primary w-100 rounded-3" for="cat3"><i class="fas fa-shoe-prints"></i></label>
-                            </div>
-                            <div class="col-3">
-                                <input type="radio" class="btn-check" name="cat" id="cat4" value="fa-box-open">
-                                <label class="btn btn-outline-primary w-100 rounded-3" for="cat4"><i class="fas fa-box-open"></i></label>
-                            </div>
+                <div class="card-body p-4">
+                    <!-- قسم رفع الصورة -->
+                    <div class="mb-3 text-center">
+                        <div id="sellerImagePreview" class="image-display-area rounded mb-3">
+                            <span>لا توجد صورة</span>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <label class="btn btn-outline-primary w-50">
+                                <i class="fas fa-upload"></i> رفع صورة
+                                <input type="file" id="uploadInput" accept="image/*" hidden>
+                            </label>
+                            <label class="btn btn-outline-secondary w-50">
+                                <i class="fas fa-camera"></i> كاميرا
+                                <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
+                            </label>
                         </div>
                     </div>
 
-                    <div class="form-floating mb-3">
-                        <input type="text" class="form-control" id="pName" placeholder="اسم المنتج">
-                        <label>اسم المنتج</label>
-                    </div>
-
-                    <div class="form-floating mb-3">
-                        <input type="number" class="form-control" id="pPrice" placeholder="السعر">
-                        <label>السعر (د.ع)</label>
-                    </div>
-
-                    <div class="form-floating mb-3">
-                        <textarea class="form-control" id="pDesc" style="height: 100px" placeholder="الوصف"></textarea>
-                        <label>تفاصيل المنتج</label>
-                    </div>
-
-                    <!-- حقل اختياري لرابط صورة -->
-                    <div class="mb-3">
-                         <label class="small text-muted">رابط صورة (اختياري)</label>
-                         <input type="url" class="form-control form-control-sm" id="pImgUrl" placeholder="https://example.com/image.jpg">
-                    </div>
-
-                    <button type="button" onclick="generateLink()" class="btn btn-modern w-100 shadow-lg">
-                        <i class="fas fa-magic me-2"></i> إنشاء الرابط
-                    </button>
-                </form>
-
-                <!-- قسم الرابط المولد -->
-                <div id="result-section" class="mt-4 hidden text-center">
-                    <div class="alert alert-success rounded-3 small py-2">تم إنشاء الرابط بنجاح!</div>
-                    <div class="input-group mb-2">
-                        <input type="text" id="finalLink" class="form-control text-start bg-white" readonly>
-                        <button class="btn btn-dark" onclick="copyLink()"><i class="fas fa-copy"></i></button>
-                    </div>
-                    <a id="waShare" href="#" target="_blank" class="btn btn-success w-100 rounded-3 fw-bold">
-                        <i class="fab fa-whatsapp me-2"></i> إرسال للزبون
-                    </a>
-                </div>
-
-                <!-- سجل سريع -->
-                <div class="mt-4 pt-3 border-top">
-                    <p class="small text-muted mb-2">آخر الروابط:</p>
-                    <div id="history-list" class="list-group list-group-flush small"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ================== واجهة الزبون ================== -->
-    <div id="customer-ui" class="hidden animate__animated animate__fadeInUp">
-        <div class="glass-card">
-            <div class="header-section bg-gradient-success" style="background: linear-gradient(135deg, #10b981, #059669);">
-                <h2 class="fw-bold mb-1"><i class="fas fa-shopping-bag me-2"></i>طلبك</h2>
-                <small>أكمل المعلومات لاستلام المنتج</small>
-            </div>
-
-            <div class="p-4 pt-0">
-                <!-- كارت المنتج -->
-                <div class="product-preview shadow-sm">
-                    <div id="c-icon" class="prod-icon"><i class="fas fa-box"></i></div>
-                    <img id="c-img" src="" class="img-fluid rounded mb-2 hidden" style="max-height: 200px;">
-                    <h4 id="c-name" class="fw-bold mb-1"></h4>
-                    <h5 id="c-price" class="text-danger fw-bold"></h5>
-                    <p id="c-desc" class="text-muted small mb-0"></p>
-                </div>
-
-                <form id="orderForm">
-                    <h6 class="fw-bold mb-3 border-bottom pb-2 text-success">بيانات التوصيل</h6>
-                    
-                    <div class="mb-3">
-                        <div class="input-group mb-2">
-                            <span class="input-group-text bg-white"><i class="fas fa-user text-muted"></i></span>
-                            <input type="text" class="form-control" id="cName" placeholder="الاسم الثلاثي" required>
+                    <!-- حقول الإدخال -->
+                    <form id="sellerForm">
+                        <div class="mb-3">
+                            <label class="form-label">اسم المنتج</label>
+                            <input type="text" class="form-control" id="productNameInput" placeholder="مثال: ساعة ذكية" required>
                         </div>
-                        <div class="input-group mb-2">
-                            <span class="input-group-text bg-white"><i class="fas fa-phone text-muted"></i></span>
-                            <input type="tel" class="form-control" id="cPhone" placeholder="رقم الهاتف" required>
+                        <div class="mb-3">
+                            <label class="form-label">سعر المنتج</label>
+                            <input type="number" class="form-control" id="productPriceInput" placeholder="مثال: 50000" required>
                         </div>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white"><i class="fas fa-map-marker-alt text-muted"></i></span>
-                            <textarea class="form-control" id="cAddress" rows="1" placeholder="العنوان (المنطقة، أقرب نقطة دالة)" required></textarea>
+                        <div class="mb-3">
+                            <label class="form-label">وصف المنتج</label>
+                            <textarea class="form-control" id="productDescInput" rows="3" placeholder="تفاصيل المنتج..."></textarea>
                         </div>
-                    </div>
 
-                    <div class="mb-4 position-relative">
-                        <label class="fw-bold small mb-2">حدد موقع المنزل</label>
-                        <div id="map"></div>
-                        <button type="button" onclick="getLocation()" class="btn btn-primary btn-sm position-absolute start-0 bottom-0 m-2 shadow" style="z-index:999;">
-                            <i class="fas fa-crosshairs me-1"></i> موقعي
+                        <hr>
+                        
+                        <button type="button" id="generateLinkBtn" class="btn btn-primary btn-custom">
+                            <i class="fas fa-link"></i> إنشاء رابط الطلب
                         </button>
+                    </form>
+
+                    <!-- منطقة عرض الرابط -->
+                    <div id="resultArea" class="mt-4 d-none">
+                        <div class="alert alert-success">
+                            <strong>تم إنشاء الرابط بنجاح!</strong>
+                            <p class="small text-muted mt-2">انسخ الرابط التالي وشاركه مع الزبائن:</p>
+                            <textarea id="generatedLink" class="form-control mb-2" rows="3" readonly></textarea>
+                            <button onclick="copyLink()" class="btn btn-sm btn-outline-success w-100">نسخ الرابط</button>
+                            <a id="previewLink" href="#" target="_blank" class="btn btn-sm btn-outline-primary w-100 mt-2">معاينة صفحة الزبون</a>
+                        </div>
                     </div>
-
-                    <button type="button" onclick="finishOrder()" class="btn btn-success btn-modern w-100 py-3">
-                        <i class="fab fa-whatsapp fa-lg me-2"></i> إرسال الطلب
-                    </button>
-                    <small class="text-muted text-center d-block mt-2" style="font-size: 0.7rem;">سيتم تحويلك للواتساب مع ملف الفاتورة</small>
-                </form>
+                </div>
             </div>
+
+            <!-- ============================ -->
+            <!-- SECTION 2: CUSTOMER PANEL (واجهة الزبون) -->
+            <!-- ============================ -->
+            <div id="customerSection" class="d-none-custom">
+                <!-- عرض تفاصيل المنتج -->
+                <div class="custom-card mb-4">
+                    <div id="customerImageDisplay" class="image-display-area">
+                        <!-- الصورة ستظهر هنا -->
+                    </div>
+                    <div class="card-body text-center">
+                        <h2 id="dispName" class="product-title">...</h2>
+                        <p id="dispPrice" class="product-price">...</p>
+                        <p id="dispDesc" class="text-muted">...</p>
+                    </div>
+                </div>
+
+                <!-- استمارة الزبون -->
+                <div class="custom-card">
+                    <div class="card-header-custom" style="background-color: var(--secondary-color);">
+                        <i class="fas fa-shopping-cart me-2"></i> بيانات الطلب
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="orderForm">
+                            <div class="mb-3">
+                                <label class="form-label">الاسم الثلاثي</label>
+                                <input type="text" class="form-control" id="custName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">رقم الهاتف</label>
+                                <input type="tel" class="form-control" id="custPhone" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">العنوان (كتابة)</label>
+                                <input type="text" class="form-control" id="custAddress" required>
+                            </div>
+
+                            <!-- الموقع الجغرافي -->
+                            <div class="mb-3">
+                                <label class="form-label">الموقع الجغرافي</label>
+                                <div class="input-group">
+                                    <button type="button" id="getLocationBtn" class="btn btn-outline-danger">
+                                        <i class="fas fa-map-marker-alt"></i> تحديد موقعي
+                                    </button>
+                                    <input type="text" id="locationStatus" class="form-control" placeholder="لم يتم التحديد" readonly>
+                                </div>
+                                <div id="mapFrame" class="mt-2" style="display:none;">
+                                    <iframe width="100%" height="200" style="border:0; border-radius:10px;" loading="lazy" allowfullscreen id="googleMap"></iframe>
+                                </div>
+                                <input type="hidden" id="lat">
+                                <input type="hidden" id="long">
+                            </div>
+
+                            <button type="submit" class="btn btn-success btn-custom">
+                                <i class="fab fa-whatsapp"></i> إرسال الطلب
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
-
 </div>
 
-<!-- تصميم الفاتورة (مخفي للطباعة) -->
-<div id="invoice-box">
-    <div style="border: 3px solid #333; padding: 20px; border-radius: 15px; position: relative; overflow: hidden;">
-        <!-- Watermark -->
-        <div style="position: absolute; top:50%; left:50%; transform:translate(-50%, -50%) rotate(-45deg); font-size: 80px; color: rgba(0,0,0,0.05); font-weight:bold;">DUKAN</div>
+<!-- ============================ -->
+<!-- SECTION 3: INVOICE LAYOUT (الفاتورة للطباعة) -->
+<!-- ============================ -->
+<div id="invoiceArea">
+    <div style="border: 2px solid #333; padding: 20px; text-align: center; background: #fff;">
+        <h2 style="margin-bottom: 20px; font-family: 'Cairo', sans-serif;">فاتورة طلب منتج</h2>
         
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 20px;">
-            <div>
-                <h1 style="margin: 0; color: #6366f1;">دكاني</h1>
-                <p style="margin: 0; font-size: 14px; color: #666;">Dukan General Store</p>
-            </div>
-            <div style="text-align: left;">
-                <h3 style="margin: 0;">فاتورة طلب</h3>
-                <p style="margin: 0; font-size: 12px;" id="inv-date"></p>
-            </div>
+        <!-- صورة المنتج في الفاتورة -->
+        <div style="display: flex; justify-content: center; margin-bottom: 15px;">
+            <img id="invImg" src="" style="width: 150px; height: 150px; object-fit: cover; border-radius: 10px; border: 1px solid #ddd;">
         </div>
-
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-            <tr style="background: #f8f9fa;">
-                <td style="padding: 10px; font-weight: bold;">المنتج</td>
-                <td style="padding: 10px; text-align: left; font-weight: bold;" id="inv-prod"></td>
-            </tr>
-            <tr>
-                <td style="padding: 10px; font-weight: bold;">السعر</td>
-                <td style="padding: 10px; text-align: left; color: #dc2626; font-size: 18px;" id="inv-price"></td>
-            </tr>
-            <tr style="background: #f8f9fa;">
-                <td style="padding: 10px; font-weight: bold;">التفاصيل</td>
-                <td style="padding: 10px; text-align: left; font-size: 12px;" id="inv-desc"></td>
-            </tr>
+        
+        <table class="table table-bordered mt-3" style="width: 100%; direction: rtl; text-align: right; font-family: 'Cairo', sans-serif;">
+            <tbody>
+                <tr><th width="30%" style="background:#f0f0f0;">رقم الطلب</th><td id="invOrderId"></td></tr>
+                <tr><th style="background:#f0f0f0;">المنتج</th><td id="invProdName"></td></tr>
+                <tr><th style="background:#f0f0f0;">السعر</th><td id="invPrice"></td></tr>
+                <tr><th style="background:#f0f0f0;">الزبون</th><td id="invCustName"></td></tr>
+                <tr><th style="background:#f0f0f0;">الهاتف</th><td id="invPhone"></td></tr>
+                <tr><th style="background:#f0f0f0;">العنوان</th><td id="invAddress"></td></tr>
+                <tr><th style="background:#f0f0f0;">الإحداثيات</th><td id="invLocation"></td></tr>
+                <tr><th style="background:#f0f0f0;">التاريخ</th><td id="invDate"></td></tr>
+            </tbody>
         </table>
-
-        <div style="background: #f0fdf4; padding: 15px; border-radius: 10px; border: 1px dashed #10b981;">
-            <h4 style="margin-top: 0; color: #059669; margin-bottom: 10px;">معلومات الزبون</h4>
-            <p style="margin: 5px 0;"><strong>الاسم:</strong> <span id="inv-name"></span></p>
-            <p style="margin: 5px 0;"><strong>الهاتف:</strong> <span id="inv-phone"></span></p>
-            <p style="margin: 5px 0;"><strong>العنوان:</strong> <span id="inv-address"></span></p>
-            <p style="margin: 5px 0; font-size: 12px; color: #555;"><strong>الإحداثيات:</strong> <span id="inv-loc"></span></p>
+        
+        <div class="mt-4" style="display: flex; justify-content: center;">
+            <div id="qrcode"></div>
         </div>
-
-        <div style="margin-top: 30px; text-align: center;">
-            <p style="font-size: 12px; color: #999;">شكراً لتسوقكم معنا | Thank you</p>
-        </div>
+        <p class="mt-2 text-muted" style="font-family: 'Cairo', sans-serif;">شكراً لثقتكم بنا</p>
     </div>
 </div>
 
-<!-- مكتبات الجافاسكريبت -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
+<!-- Javascript Logic -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // === المتغيرات العامة ===
-    let myPhone = localStorage.getItem('dukanPhone') || "9647503727069";
-    let map, marker, userLoc = { lat: 33.3152, lng: 44.3661 }; // بغداد
-    let prodData = {};
+    // ================= GLOBAL VARIABLES =================
+    let productBase64 = null;
+    let productId = null;
 
-    // عند التحميل
-    window.onload = function() {
-        document.getElementById('merchantPhone').value = myPhone;
-        renderHistory();
-
-        const params = new URLSearchParams(window.location.search);
-        const d = params.get('data');
-
-        if (d) {
-            initCustomer(d);
-        } else {
-            document.getElementById('merchant-ui').classList.remove('hidden');
-        }
-    };
-
-    // === دوال التاجر ===
-    function toggleSettings() {
-        document.getElementById('settings-panel').classList.toggle('hidden');
-    }
-
-    function saveSettings() {
-        const p = document.getElementById('merchantPhone').value;
-        if(p) {
-            myPhone = p;
-            localStorage.setItem('dukanPhone', p);
-            alert('تم حفظ الرقم: ' + p);
-            toggleSettings();
-        }
-    }
-
-    function generateLink() {
-        const name = document.getElementById('pName').value;
-        const price = document.getElementById('pPrice').value;
-        const desc = document.getElementById('pDesc').value;
-        const imgUrl = document.getElementById('pImgUrl').value;
-        const icon = document.querySelector('input[name="cat"]:checked').value;
-
-        if (!name || !price) {
-            alert('اكتب الاسم والسعر على الأقل');
-            return;
-        }
-
-        const data = { n: name, p: price, d: desc, i: icon, u: imgUrl };
-        // تشفير البيانات Base64 مع دعم العربية
-        const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
-        const link = `${window.location.origin}${window.location.pathname}?data=${encoded}`;
-
-        document.getElementById('finalLink').value = link;
-        document.getElementById('result-section').classList.remove('hidden');
+    // ================= MAIN ROUTER (توجيه الصفحات) =================
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
         
-        // رابط واتساب للمشاركة
-        const waText = `✨ *منتج جديد من دكاني* ✨\n\n📦 *${name}*\n💰 *${price} د.ع*\n\n👇 *لطلب المنتج اضغط على الرابط:*\n${link}`;
-        document.getElementById('waShare').href = `https://wa.me/?text=${encodeURIComponent(waText)}`;
+        if (urlParams.has('id')) {
+            // يوجد معرف منتج في الرابط -> عرض واجهة الزبون
+            document.getElementById('sellerSection').classList.add('d-none-custom');
+            document.getElementById('customerSection').classList.remove('d-none-custom');
+            initCustomerPage(urlParams);
+        } else {
+            // لا يوجد معرف -> عرض واجهة البائع
+            document.getElementById('sellerSection').classList.remove('d-none-custom');
+            document.getElementById('customerSection').classList.add('d-none-custom');
+            initSellerPage();
+        }
+    });
 
-        saveToHistory(name, link);
+    // ================= HELPER FUNCTIONS =================
+    function convertToBase64(file, callback) {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = function () { callback(reader.result); };
+        reader.onerror = function (error) { console.log('Error: ', error); };
     }
 
-    function saveToHistory(name, link) {
-        let history = JSON.parse(localStorage.getItem('dukanHistory') || "[]");
-        history.unshift({ name: name, link: link, time: new Date().toLocaleTimeString() });
-        if (history.length > 5) history.pop();
-        localStorage.setItem('dukanHistory', JSON.stringify(history));
-        renderHistory();
+    function generateUUID() {
+        return 'xxxx-xxxx-4xxx-yxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
     }
 
-    function renderHistory() {
-        const history = JSON.parse(localStorage.getItem('dukanHistory') || "[]");
-        const list = document.getElementById('history-list');
-        list.innerHTML = '';
-        history.forEach(h => {
-            list.innerHTML += `<a href="${h.link}" target="_blank" class="list-group-item list-group-item-action">${h.name} <span class="float-end text-muted" style="font-size:0.7em">${h.time}</span></a>`;
+    // ================= SELLER LOGIC (وظائف البائع) =================
+    function initSellerPage() {
+        const uploadInput = document.getElementById('uploadInput');
+        const cameraInput = document.getElementById('cameraInput');
+        const imagePreview = document.getElementById('sellerImagePreview');
+
+        const handleImage = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 500000) { 
+                    alert("تنبيه: حجم الصورة كبير جداً، قد لا يعمل الرابط بشكل صحيح. يفضل صور أقل من 500KB.");
+                }
+                convertToBase64(file, (base64) => {
+                    productBase64 = base64;
+                    imagePreview.innerHTML = `<img src="${base64}" alt="Preview">`;
+                });
+            }
+        };
+
+        if(uploadInput) uploadInput.addEventListener('change', handleImage);
+        if(cameraInput) cameraInput.addEventListener('change', handleImage);
+
+        document.getElementById('generateLinkBtn').addEventListener('click', () => {
+            const name = document.getElementById('productNameInput').value;
+            const price = document.getElementById('productPriceInput').value;
+            const desc = document.getElementById('productDescInput').value;
+
+            if (!name || !price) {
+                alert('يرجى ملء اسم المنتج والسعر');
+                return;
+            }
+
+            const params = new URLSearchParams();
+            params.set('id', generateUUID());
+            params.set('name', name);
+            params.set('price', price);
+            params.set('desc', desc);
+            if (productBase64) params.set('img', productBase64);
+
+            // إنشاء الرابط لنفس الصفحة الحالية
+            const currentUrl = window.location.href.split('?')[0];
+            const fullLink = `${currentUrl}?${params.toString()}`;
+
+            const resultArea = document.getElementById('resultArea');
+            resultArea.classList.remove('d-none');
+            document.getElementById('generatedLink').value = fullLink;
+            document.getElementById('previewLink').href = fullLink;
+            
+            // تمرير بسيط لأسفل
+            resultArea.scrollIntoView({behavior: "smooth"});
         });
     }
 
     function copyLink() {
-        const t = document.getElementById("finalLink");
-        t.select();
+        const copyText = document.getElementById("generatedLink");
+        copyText.select();
         document.execCommand("copy");
-        // زر يظهر نجاح النسخ
-        const btn = document.querySelector('#result-section .btn-dark');
-        const originalHtml = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-check"></i>';
-        setTimeout(() => btn.innerHTML = originalHtml, 2000);
+        alert("تم نسخ الرابط!");
     }
 
-    // === دوال الزبون ===
-    function initCustomer(data) {
-        document.getElementById('merchant-ui').classList.add('hidden');
-        document.getElementById('customer-ui').classList.remove('hidden');
+    // ================= CUSTOMER LOGIC (وظائف الزبون) =================
+    function initCustomerPage(params) {
+        // 1. عرض البيانات
+        const pName = params.get('name') || "منتج غير معروف";
+        const pPrice = params.get('price') || "0";
+        const pDesc = params.get('desc') || "";
+        const pImg = params.get('img');
+        productId = params.get('id');
 
-        try {
-            prodData = JSON.parse(decodeURIComponent(escape(atob(data))));
-            
-            document.getElementById('c-name').innerText = prodData.n;
-            document.getElementById('c-price').innerText = Number(prodData.p).toLocaleString() + " د.ع";
-            document.getElementById('c-desc').innerText = prodData.d;
-            
-            // الصورة أو الأيقونة
-            if(prodData.u) {
-                document.getElementById('c-img').src = prodData.u;
-                document.getElementById('c-img').classList.remove('hidden');
-                document.getElementById('c-icon').classList.add('hidden');
-            } else {
-                document.getElementById('c-icon').innerHTML = `<i class="fas ${prodData.i}"></i>`;
-            }
+        document.getElementById('dispName').textContent = pName;
+        document.getElementById('dispPrice').textContent = pPrice + " د.ع";
+        document.getElementById('dispDesc').textContent = pDesc;
 
-            initMap();
-        } catch(e) {
-            alert('الرابط غير صالح');
+        if (pImg) {
+            document.getElementById('customerImageDisplay').innerHTML = `<img src="${pImg}" alt="Product">`;
+            document.getElementById('invImg').src = pImg; 
+        } else {
+            document.getElementById('customerImageDisplay').innerHTML = `<div class="p-5">لا توجد صورة</div>`;
+            document.getElementById('invImg').style.display = 'none';
         }
-    }
 
-    function initMap() {
-        map = L.map('map').setView([userLoc.lat, userLoc.lng], 12);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        
-        marker = L.marker([userLoc.lat, userLoc.lng], { draggable: true }).addTo(map);
-        marker.on('dragend', function(e) { userLoc = marker.getLatLng(); });
-        map.on('click', function(e) { 
-            marker.setLatLng(e.latlng);
-            userLoc = e.latlng;
+        // 2. تحديد الموقع
+        const locBtn = document.getElementById('getLocationBtn');
+        locBtn.addEventListener('click', () => {
+            if (navigator.geolocation) {
+                locBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جارٍ التحديد...';
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    const lat = pos.coords.latitude;
+                    const long = pos.coords.longitude;
+                    
+                    document.getElementById('lat').value = lat;
+                    document.getElementById('long').value = long;
+                    document.getElementById('locationStatus').value = `${lat}, ${long}`;
+                    
+                    const mapFrame = document.getElementById('googleMap');
+                    mapFrame.src = `https://maps.google.com/maps?q=${lat},${long}&z=15&output=embed`;
+                    document.getElementById('mapFrame').style.display = 'block';
+                    
+                    locBtn.innerHTML = '<i class="fas fa-check"></i> تم التحديد';
+                    locBtn.classList.replace('btn-outline-danger', 'btn-success');
+                }, (err) => {
+                    alert("خطأ في تحديد الموقع: " + err.message);
+                    locBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> إعادة المحاولة';
+                });
+            } else {
+                alert("جهازك لا يدعم تحديد الموقع");
+            }
+        });
+
+        // 3. إرسال الطلب (PDF + WhatsApp)
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const btn = this.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جارٍ المعالجة...';
+            btn.disabled = true;
+
+            const cName = document.getElementById('custName').value;
+            const cPhone = document.getElementById('custPhone').value;
+            const cAddress = document.getElementById('custAddress').value;
+            const lat = document.getElementById('lat').value;
+            const long = document.getElementById('long').value;
+            const dateNow = new Date().toLocaleString('ar-IQ');
+
+            // تعبئة الفاتورة
+            document.getElementById('invOrderId').innerText = productId;
+            document.getElementById('invProdName').innerText = pName;
+            document.getElementById('invPrice').innerText = pPrice + " د.ع";
+            document.getElementById('invCustName').innerText = cName;
+            document.getElementById('invPhone').innerText = cPhone;
+            document.getElementById('invAddress').innerText = cAddress;
+            document.getElementById('invLocation').innerText = lat ? `${lat}, ${long}` : "غير محدد";
+            document.getElementById('invDate').innerText = dateNow;
+
+            // توليد QR
+            document.getElementById('qrcode').innerHTML = ""; 
+            new QRCode(document.getElementById("qrcode"), {
+                text: `Order:${productId}|Cust:${cName}|Ph:${cPhone}`,
+                width: 100,
+                height: 100
+            });
+
+            // تأخير بسيط لتوليد QR ثم إنشاء PDF
+            setTimeout(() => {
+                const invoiceElement = document.getElementById('invoiceArea');
+                
+                // تحويل HTML إلى صورة (Canvas) لدعم العربية
+                html2canvas(invoiceElement, { scale: 2, useCORS: true }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const imgProps = pdf.getImageProperties(imgData);
+                    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+                    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                    pdf.save(`order_${productId}.pdf`);
+
+                    // بعد تحميل الـ PDF، نرسل واتساب
+                    sendWhatsApp(cName, cPhone, cAddress, lat, long, pName, pPrice, pDesc);
+                    
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+            }, 500);
         });
     }
 
-    function getLocation() {
-        if(navigator.geolocation) {
-            document.getElementById('loader').classList.remove('hidden');
-            navigator.geolocation.getCurrentPosition(pos => {
-                userLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                map.setView(userLoc, 17);
-                marker.setLatLng(userLoc);
-                document.getElementById('loader').classList.add('hidden');
-            }, () => {
-                alert('فشل تحديد الموقع، يرجى تحديده يدوياً');
-                document.getElementById('loader').classList.add('hidden');
-            });
-        }
-    }
+    function sendWhatsApp(cName, cPhone, cAddress, lat, long, pName, pPrice, pDesc) {
+        let mapLink = (lat && long) ? `https://www.google.com/maps?q=${lat},${long}` : "لم يتم التحديد";
+        
+        const waMessage = `
+🔥 *طلب جديد* 🔥
+------------------
+👤 *الزبون:* ${cName}
+📱 *الهاتف:* ${cPhone}
+🏠 *العنوان:* ${cAddress}
+📍 *الموقع:* ${mapLink}
+------------------
+📦 *المنتج:* ${pName}
+💰 *السعر:* ${pPrice}
+📝 *التفاصيل:* ${pDesc}
+🆔 *رقم الطلب:* ${productId}
+        `.trim();
 
-    // === إكمال الطلب (Confetti + PDF + WhatsApp) ===
-    async function finishOrder() {
-        const n = document.getElementById('cName').value;
-        const p = document.getElementById('cPhone').value;
-        const a = document.getElementById('cAddress').value;
-
-        if(!n || !p || !a) {
-            alert('يرجى ملء جميع الحقول');
-            return;
-        }
-
-        // 1. الاحتفال
-        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-        document.getElementById('loader').classList.remove('hidden');
-
-        // 2. تعبئة الفاتورة
-        document.getElementById('inv-date').innerText = new Date().toLocaleDateString();
-        document.getElementById('inv-prod').innerText = prodData.n;
-        document.getElementById('inv-price').innerText = prodData.p + " د.ع";
-        document.getElementById('inv-desc').innerText = prodData.d;
-        document.getElementById('inv-name').innerText = n;
-        document.getElementById('inv-phone').innerText = p;
-        document.getElementById('inv-address').innerText = a;
-        document.getElementById('inv-loc').innerText = `${userLoc.lat.toFixed(5)}, ${userLoc.lng.toFixed(5)}`;
-
-        // 3. تحويل الفاتورة لصورة ثم PDF
-        setTimeout(async () => {
-            try {
-                const element = document.getElementById('invoice-box');
-                const canvas = await html2canvas(element, { scale: 2 });
-                const imgData = canvas.toDataURL('image/jpeg', 0.9);
-                
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a5');
-                const w = pdf.internal.pageSize.getWidth();
-                const h = (canvas.height * w) / canvas.width;
-                pdf.addImage(imgData, 'JPEG', 0, 0, w, h);
-                pdf.save(`فاتورة_${n}.pdf`);
-
-                // 4. تجهيز رسالة الواتساب
-                const mapUrl = `https://maps.google.com/?q=${userLoc.lat},${userLoc.lng}`;
-                const msg = `*طلب جديد يا ريس!* 🚀\n\n📦 *المنتج:* ${prodData.n}\n💰 *السعر:* ${prodData.p}\n\n👤 *الزبون:* ${n}\n📱 *رقم:* ${p}\n🏠 *العنوان:* ${a}\n📍 *اللوكيشن:* ${mapUrl}\n\n_مرفق الفاتورة PDF_`;
-                
-                window.open(`https://wa.me/${myPhone}?text=${encodeURIComponent(msg)}`, '_blank');
-
-            } catch(e) {
-                console.error(e);
-                alert('حدث خطأ تقني، سيتم تحويلك للواتساب.');
-                window.open(`https://wa.me/${myPhone}`, '_blank');
-            } finally {
-                document.getElementById('loader').classList.add('hidden');
-            }
-        }, 800);
+        const encodedMsg = encodeURIComponent(waMessage);
+        const waNumber = "9647503727069"; 
+        
+        // فتح واتساب
+        setTimeout(() => {
+            window.open(`https://wa.me/${waNumber}?text=${encodedMsg}`, '_blank');
+        }, 1000);
     }
 </script>
 
